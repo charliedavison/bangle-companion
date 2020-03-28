@@ -1,0 +1,7 @@
+{
+  "name": "banglejs-companion",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
