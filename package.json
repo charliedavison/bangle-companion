@@ -45,7 +45,8 @@
     ]
   },
   "devDependencies": {
-    "@capacitor/cli": "1.5.2"
+    "@capacitor/cli": "1.5.2",
+    "@types/web-bluetooth": "0.0.5"
   },
   "description": "An Ionic project"
 }
