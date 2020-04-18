@@ -3,9 +3,9 @@ import React from 'react';
 interface ConnectionContextInterface {
     connect: () => Promise<void>,
     disconnect: () => Promise<void>,
-    write: (value: string) => Promise<void>,
     isDeviceConnected: boolean,
     isDeviceConnecting: boolean
+    accelerometerValue: Int32Array
 }
 
 interface ConnectionProviderProps {
@@ -15,27 +15,25 @@ interface ConnectionProviderProps {
 export const ConnectionContext = React.createContext<ConnectionContextInterface>({
     connect: () => Promise.resolve(),
     disconnect: () => Promise.resolve(),
-    write: () => Promise.resolve(),
     isDeviceConnected: false,
-    isDeviceConnecting: false
+    isDeviceConnecting: false,
+    accelerometerValue: new Int32Array([0, 0, 0])
 });
 
 let bluetoothDevice: BluetoothDevice;
 let bluetoothCharacteristic: BluetoothRemoteGATTCharacteristic;
 
 export const ConnectionProvider = ({ children }: ConnectionProviderProps) => {
+    // These details can be used to write arbitrary commands to the Bangle - useful for testing.
     // const bluetoothServiceUUID: BluetoothServiceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
     // const bluetoothCharacteristicUUID: BluetoothCharacteristicUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-    
-    // const bluetoothServiceUUID: BluetoothServiceUUID = '92c1b5b8-e824-4938-bbed-672529103e56';
-    // const bluetoothCharacteristicUUID: BluetoothCharacteristicUUID = '92c1b5b8-e825-4938-bbed-672529103e56';
 
     const bluetoothServiceUUID: BluetoothServiceUUID = 'f8b23a4d-89ad-4220-8c9f-d81756009f0c';
-    const bluetoothCharacteristicUUID: BluetoothCharacteristicUUID = 'f8b23a4d-89ad-4220-8c9f-d81756009f0c';
-
+    const bluetoothCharacteristicUUID: BluetoothCharacteristicUUID = 'f8b23a4d-89ad-4220-8c9f-d81756009f0d';
 
     const [isDeviceConnected, setIsDeviceConnected] = React.useState<boolean>(false);
     const [isDeviceConnecting, setIsDeviceConnecting] = React.useState<boolean>(false);
+    const [accelerometerValue, setAccelerometerValue] = React.useState<Int32Array>(new Int32Array([0, 0, 0]));
 
     const getConnectionFilter = (): RequestDeviceOptions => ({
         filters: [{ namePrefix: 'Bangle.js' }],
@@ -48,23 +46,20 @@ export const ConnectionProvider = ({ children }: ConnectionProviderProps) => {
     }
 
     const changedEvent = (e: any) => {
-        console.log(e);
+        setAccelerometerValue(new Int32Array(e.target.value.buffer));
     }
 
     const connect = async (): Promise<void> => {
         try {
             setIsDeviceConnecting(true);
 
-            const bluetoothDevice = await requestDevice();
+            bluetoothDevice = await requestDevice();
 
             bluetoothDevice.addEventListener('gattserverdisconnected', () => {
                 setIsDeviceConnected(false)
             })
             
             const bluetoothGATTServer = await bluetoothDevice.gatt?.connect();
-
-            // const services = await bluetoothGATTServer?.getPrimaryServices();
-            // console.log(services);
 
             const bluetoothGATTService = await bluetoothGATTServer?.getPrimaryService(bluetoothServiceUUID);
             bluetoothCharacteristic = await bluetoothGATTService!.getCharacteristic(bluetoothCharacteristicUUID);
@@ -75,8 +70,6 @@ export const ConnectionProvider = ({ children }: ConnectionProviderProps) => {
             setIsDeviceConnected(true);
             setIsDeviceConnecting(false);
 
-            // Write a buzz to the watch to test connection.
-            await write('Bangle.buzz();')
         } catch (err) {
             setIsDeviceConnecting(false);
             console.error(err);
@@ -94,10 +87,8 @@ export const ConnectionProvider = ({ children }: ConnectionProviderProps) => {
         console.log(`Written ${val} to watch`);
     }
 
-
-
     return (
-        <ConnectionContext.Provider value={{ connect, disconnect, write, isDeviceConnected, isDeviceConnecting }}>
+        <ConnectionContext.Provider value={{ connect, disconnect, accelerometerValue, isDeviceConnected, isDeviceConnecting }}>
             {children}
         </ConnectionContext.Provider>
     )

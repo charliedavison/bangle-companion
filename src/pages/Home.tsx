@@ -6,22 +6,15 @@ import { ConnectionContext } from './../providers/ConnectionProvider';
 
 import './Home.css';
 
-
-
 const Home: React.FC = () => {
-  const [ command, setCommand ] = React.useState<string>('Bangle.buzz();');
-  const { connect, disconnect, write, isDeviceConnected, isDeviceConnecting } = React.useContext(ConnectionContext);
+  const { connect, disconnect, isDeviceConnected, isDeviceConnecting, accelerometerValue } = React.useContext(ConnectionContext);
 
   const onClickConnect = async () => {
     if (isDeviceConnected) {
-      return await disconnect()
+      return await disconnect();
     };
     await connect();
   }
-
-  const onClickWrite = async () => {
-    await write(command);
-  };
 
   return (
     <IonPage>
@@ -38,10 +31,8 @@ const Home: React.FC = () => {
       <IonContent>
         <IonButton expand={"block"} fill={'solid'} size={'large'} color={'primary'} onClick={onClickConnect} disabled={isDeviceConnecting}>
           { isDeviceConnecting ? <IonSpinner name="dots" /> : isDeviceConnected ? 'Disconnect' : 'Connect' }
-          
           </IonButton>
-        <IonInput inputmode={'text'} value={command} onIonChange={e => setCommand(e.detail.value!) }/>
-        <IonButton expand={"block"} fill={'solid'} size={'large'} color={'success'} onClick={onClickWrite} disabled={!isDeviceConnected}>Write</IonButton>
+          <p>{accelerometerValue}</p>
       </IonContent>
     </IonPage>
   );
