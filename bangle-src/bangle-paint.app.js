@@ -31,7 +31,6 @@ function showWaiting() {
 }
 
 function onInit() {
-  // on connect / disconnect blink the green / red LED turn on / off the magnetometer
   NRF.on("connect", onConnect);
   NRF.on("disconnect", onDisconnect);
 
