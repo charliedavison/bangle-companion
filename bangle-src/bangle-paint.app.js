@@ -40,7 +40,7 @@ function onInit() {
         description: "Bangle accelerometer",
         notify: true,
         readable: true,
-        value: new Float32Array([0, 0, 0, 0, 0]).buffer,
+        value: new Float32Array([0, 0, 0]).buffer,
       },
     },
   });
