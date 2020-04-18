@@ -69,17 +69,11 @@ export const ConnectionProvider = ({ children }: ConnectionProviderProps) => {
             const bluetoothGATTService = await bluetoothGATTServer?.getPrimaryService(bluetoothServiceUUID);
             bluetoothCharacteristic = await bluetoothGATTService!.getCharacteristic(bluetoothCharacteristicUUID);
             
-            debugger;
             bluetoothCharacteristic.addEventListener('characteristicvaluechanged', changedEvent);
             bluetoothCharacteristic.startNotifications();
 
-            const v = await bluetoothCharacteristic.readValue();
-            console.log(`Read value: ${v}`);
-
             setIsDeviceConnected(true);
             setIsDeviceConnecting(false);
-
-
 
             // Write a buzz to the watch to test connection.
             await write('Bangle.buzz();')
